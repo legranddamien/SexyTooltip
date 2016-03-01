@@ -647,21 +647,30 @@ CGRectFromEdgeInsets(CGRect rect, UIEdgeInsets edgeInsets) {
             shrinkAnimation.duration = kSexyTooltipDismissDurationExpand;
             shrinkAnimation.toValue = [NSValue valueWithCGSize:CGSizeMake(0.01, 0.01)];
             shrinkAnimation.completionBlock = ^(POPAnimation *anim, BOOL finished) {
-                [self cleanupForDismissal];
-                self.isAnimating = NO;
+                
+                if(finished)
+                {
+                    if ([self.delegate respondsToSelector:@selector(tooltipDidDismiss:)]) {
+                        [self.delegate tooltipDidDismiss:self];
+                    }
+                    
+                    [self cleanupForDismissal];
+                    self.isAnimating = NO;
+                }
             };
             [self.layer pop_addAnimation:shrinkAnimation forKey:@"size"];
         };
         [self.layer pop_addAnimation:expandAnimation forKey:@"size"];
     } else {
+        
+        if ([self.delegate respondsToSelector:@selector(tooltipDidDismiss:)]) {
+            [self.delegate tooltipDidDismiss:self];
+        }
+        
         [self cleanupForDismissal];
     }
 
     self.fromView = nil;
-    
-    if ([self.delegate respondsToSelector:@selector(tooltipDidDismiss:)]) {
-        [self.delegate tooltipDidDismiss:self];
-    }
 }
 
 - (void)dismiss
